@@ -40,23 +40,18 @@ Vec mesh::getNormal(const Ray &r, const double &t) {
 double mesh::intersect(const Ray &r, int &parameter) {
     if (useSphere && Sphere::intersect(r, parameter) >= 1e20)
         return 1e20;
-    bool intersectAABB = false;
-    for (auto t: this->AABB) {
-        if (t.intersect(r) < 1e20 / 2) {
-            intersectAABB = true;
-        }
-    }
-    if (!intersectAABB) {
-        return 1e20;
-    }
+//    bool intersectAABB = false;
+//    for (auto t: this->AABB) {
+//        if (t.intersect(r) < 1e20 / 2) {
+//            intersectAABB = true;
+//        }
+//    }
+//    if (!intersectAABB) {
+//        return 1e20;
+//    }
     double t = 1e20;
     static omp_lock_t lock;
     std::vector<int> indices = meshKDTree->getTriangle(r);
-//    std::vector<int> indices;
-//    for (int i = 0; i< allTriangles.size(); i++) {
-//        indices.push_back(i);
-//    }
-
     omp_init_lock(&lock);
 #pragma omp parallel for schedule(dynamic, 12)
     for (int j = 0; j < indices.size(); j++) {
@@ -84,18 +79,18 @@ void mesh::initSphereAndAABB() {
         if (vertex.z < minZ.z) minZ = vertex;
     }
 
-    AABB.emplace_back(Vec(maxX.x, maxY.y, maxZ.z), Vec(maxX.x, maxY.y, minZ.z), Vec(maxX.x, minY.y, maxZ.z));
-    AABB.emplace_back(Vec(maxX.x, minY.y, minZ.z), Vec(maxX.x, maxY.y, minZ.z), Vec(maxX.x, minY.y, maxZ.z));
-    AABB.emplace_back(Vec(minX.x, minY.y, minZ.z), Vec(minX.x, maxY.y, minZ.z), Vec(minX.x, minY.y, maxZ.z));
-    AABB.emplace_back(Vec(minX.x, minY.y, minZ.z), Vec(minX.x, maxY.y, minZ.z), Vec(minX.x, minY.y, maxZ.z));
-    AABB.emplace_back(Vec(maxX.x, maxY.y, maxZ.z), Vec(maxX.x, maxY.y, minZ.z), Vec(minX.x, maxY.y, maxZ.z));
-    AABB.emplace_back(Vec(minX.x, maxY.y, minZ.z), Vec(maxX.x, maxY.y, minZ.z), Vec(minX.x, maxY.y, maxZ.z));
-    AABB.emplace_back(Vec(maxX.x, minY.y, maxZ.z), Vec(maxX.x, minY.y, minZ.z), Vec(minX.x, minY.y, maxZ.z));
-    AABB.emplace_back(Vec(minX.x, minY.y, minZ.z), Vec(maxX.x, minY.y, minZ.z), Vec(minX.x, minY.y, maxZ.z));
-    AABB.emplace_back(Vec(maxX.x, maxY.y, maxZ.z), Vec(minX.x, maxY.y, maxZ.z), Vec(maxX.x, minY.y, maxZ.z));
-    AABB.emplace_back(Vec(minX.x, minY.y, maxZ.z), Vec(minX.x, maxY.y, maxZ.z), Vec(maxX.x, minY.y, maxZ.z));
-    AABB.emplace_back(Vec(maxX.x, maxY.y, minZ.z), Vec(minX.x, maxY.y, minZ.z), Vec(maxX.x, minY.y, minZ.z));
-    AABB.emplace_back(Vec(minX.x, minY.y, minZ.z), Vec(minX.x, maxY.y, minZ.z), Vec(maxX.x, minY.y, minZ.z));
+//    AABB.emplace_back(Vec(maxX.x, maxY.y, maxZ.z), Vec(maxX.x, maxY.y, minZ.z), Vec(maxX.x, minY.y, maxZ.z));
+//    AABB.emplace_back(Vec(maxX.x, minY.y, minZ.z), Vec(maxX.x, maxY.y, minZ.z), Vec(maxX.x, minY.y, maxZ.z));
+//    AABB.emplace_back(Vec(minX.x, minY.y, minZ.z), Vec(minX.x, maxY.y, minZ.z), Vec(minX.x, minY.y, maxZ.z));
+//    AABB.emplace_back(Vec(minX.x, minY.y, minZ.z), Vec(minX.x, maxY.y, minZ.z), Vec(minX.x, minY.y, maxZ.z));
+//    AABB.emplace_back(Vec(maxX.x, maxY.y, maxZ.z), Vec(maxX.x, maxY.y, minZ.z), Vec(minX.x, maxY.y, maxZ.z));
+//    AABB.emplace_back(Vec(minX.x, maxY.y, minZ.z), Vec(maxX.x, maxY.y, minZ.z), Vec(minX.x, maxY.y, maxZ.z));
+//    AABB.emplace_back(Vec(maxX.x, minY.y, maxZ.z), Vec(maxX.x, minY.y, minZ.z), Vec(minX.x, minY.y, maxZ.z));
+//    AABB.emplace_back(Vec(minX.x, minY.y, minZ.z), Vec(maxX.x, minY.y, minZ.z), Vec(minX.x, minY.y, maxZ.z));
+//    AABB.emplace_back(Vec(maxX.x, maxY.y, maxZ.z), Vec(minX.x, maxY.y, maxZ.z), Vec(maxX.x, minY.y, maxZ.z));
+//    AABB.emplace_back(Vec(minX.x, minY.y, maxZ.z), Vec(minX.x, maxY.y, maxZ.z), Vec(maxX.x, minY.y, maxZ.z));
+//    AABB.emplace_back(Vec(maxX.x, maxY.y, minZ.z), Vec(minX.x, maxY.y, minZ.z), Vec(maxX.x, minY.y, minZ.z));
+//    AABB.emplace_back(Vec(minX.x, minY.y, minZ.z), Vec(minX.x, maxY.y, minZ.z), Vec(maxX.x, minY.y, minZ.z));
 
     double xDistance = maxX / minX;
     double yDistance = maxY / minY;

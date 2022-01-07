@@ -23,6 +23,10 @@ public:
 
     Vec min;
     Vec max;
+//    std::vector<Ray> getLines() const;
+
+//private:
+//    std::vector<Ray> lines;
 };
 
 class KdTree {
@@ -34,6 +38,7 @@ public:
     std::vector<int> getTriangle(const Ray &ray);
 
 private:
+
     class Node {
     public:
         Node(const std::vector<int> &triangles, KdTree *root, const AABBKDTree &aabbParent, int level, int dimension,

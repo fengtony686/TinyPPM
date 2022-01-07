@@ -123,39 +123,43 @@ KdTree::Node::Node(const std::vector<int> &triangles, KdTree *root, const AABBKD
         advance(iterator, mapSplit.size() / 2);
         double splitPoint = (*(root->triangles))[iterator->second].getCentroid().getIndex(dimension);
 
-        std::vector<int> leftindices;
-        std::vector<int> rightindices;
+        std::vector<int> leftIndices;
+        std::vector<int> rightIndices;
 
         AABBKDTree aabbLeft;
         AABBKDTree aabbRight;
-        if (dimension == 0) {
-            aabbLeft = AABBKDTree(aabb.min, Vec(splitPoint, aabb.max.y, aabb.max.z));
-            aabbRight = AABBKDTree(Vec(splitPoint, aabb.min.y, aabb.min.z), aabb.max);
-        } else if (dimension == 1) {
-            aabbLeft = AABBKDTree(aabb.min, Vec(aabb.max.x, splitPoint, aabb.max.z));
-            aabbRight = AABBKDTree(Vec(aabb.min.x, splitPoint, aabb.min.z), aabb.max);
-        } else {
-            aabbLeft = AABBKDTree(aabb.min, Vec(aabb.max.x, aabb.max.y, splitPoint));
-            aabbRight = AABBKDTree(Vec(aabb.min.x, aabb.min.y, splitPoint), aabb.max);
+        Vec leftMax, rightMin;
+        switch (dimension) {
+            case 0:
+                leftMax = Vec(splitPoint, aabb.max.y, aabb.max.z);
+                rightMin = Vec(splitPoint, aabb.min.y, aabb.min.z);
+                break;
+            case 1:
+                leftMax = Vec(aabb.max.x, splitPoint, aabb.max.z);
+                rightMin = Vec(aabb.min.y, splitPoint, aabb.min.z);
+                break;
+            case 2:
+                leftMax = Vec(aabb.max.x, aabb.max.y, splitPoint);
+                rightMin = Vec(aabb.min.x, aabb.min.y, splitPoint);
+                break;
+            default:
+                leftMax = aabb.max;
+                rightMin = aabb.min;
         }
+        aabbLeft = AABBKDTree(aabb.min, leftMax);
+        aabbRight = AABBKDTree(rightMin, aabb.max);
 
         for (int index: triangles) {
             if (aabbLeft.isIntersect((*root->triangles)[index])) {
-                leftindices.push_back(index);
+                leftIndices.push_back(index);
             }
             if (aabbRight.isIntersect((*root->triangles)[index])) {
-                rightindices.push_back(index);
+                rightIndices.push_back(index);
             }
         }
-
-        if (dimension == 2) {
-            dimension = 0;
-        } else {
-            dimension++;
-        }
-
-        left = new Node(leftindices, root, aabbLeft, level + 1, dimension, maxLevel, minTriangle);
-        right = new Node(rightindices, root, aabbRight, level + 1, dimension, maxLevel, minTriangle);
+        dimension = (dimension + 1) % 3;
+        left = new Node(leftIndices, root, aabbLeft, level + 1, dimension, maxLevel, minTriangle);
+        right = new Node(rightIndices, root, aabbRight, level + 1, dimension, maxLevel, minTriangle);
     } else {
         this->triangles = triangles;
         leaf = true;
@@ -171,9 +175,12 @@ std::vector<int> KdTree::Node::getTriangle(const Ray &ray) {
                 triangleIndices.push_back(index);
             }
         } else {
-            std::vector<int> leftIndices = left->getTriangle(ray);
-            std::vector<int> rightIndices = right->getTriangle(ray);
-
+            std::vector<int> leftIndices;
+            std::vector<int> rightIndices;
+            if (left != nullptr && right != nullptr) {
+                leftIndices = left->getTriangle(ray);
+                rightIndices = right->getTriangle(ray);
+            }
             for (int index: leftIndices) {
                 triangleIndices.push_back(index);
             }

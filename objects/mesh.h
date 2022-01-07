@@ -16,7 +16,7 @@ public:
     double zoom;
     std::vector<Vec> allVertices;
     std::vector<Triangle> allTriangles;
-    std::vector<Triangle> AABB;
+//    std::vector<Triangle> AABB;
     Vec axis;
     KdTree * meshKDTree;
     char buffer[MAX_LENGTH]{};
