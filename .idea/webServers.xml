@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="8eec09e1-bcd5-4a43-a520-e1046e959504" name="ml">
+        <fileTransfer accessType="SFTP" host="101.6.96.191" port="6203" sshConfigId="8d90734a-63e2-4ea0-bbd6-bf338db3dcb6" sshConfig="ml2021-2019012342@101.6.96.191:6203 key" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
