@@ -220,3 +220,10 @@ Vec directionX = Vec(point.y, -point.x, 0).norm();
                      height="400"/></center></td>
     </tr>
 </table>
+
+## LICENSE
+本项目基于Graphics A+ LICENSE，属于MIT LICENSE的一个延伸。
+
+使用或者参考本仓库代码的时候，在遵循MIT LICENSE的同时，需要同时遵循以下两条规则：
+1. 如果您有效果图，则必须将效果图的链接加入到这个README中，可以以PR或者ISSUE的方式让本仓库拥有者获悉；
+2. 如果您在《计算机图形学基础》或者《高等计算机图形学》中拿到了A+的成绩，则必须请本仓库拥有者吃饭。
