@@ -42,6 +42,7 @@ bool manager::intersect(const Ray &r, double &t, int &id, int &parameter) {
     return t < 1e20;
 }
 
+// First phase of PPM, like path tracing
 void manager::measure(const Ray &ray, int depth, const Vec &fl, const Vec &adj, int i) {
     double t;
     int ObjectID;
@@ -127,6 +128,7 @@ void manager::measure(const Ray &ray, int depth, const Vec &fl, const Vec &adj, 
     }
 }
 
+// Second phase of PPM
 void manager::trace(const Ray &ray, int depth, const Vec &fl, const Vec &adj, int i) {
     double t;
     int ObjectID;

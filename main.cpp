@@ -5,7 +5,7 @@
 const bool ANTI_ALIASING = false;
 const double focalLength = 0;
 const double aperture = 2.5;
-const int width = 2048, height = 1536;
+const int width = 512, height = 384;
 
 int main() {
     const double bezier_div_x = 3;
@@ -83,8 +83,8 @@ int main() {
     myManager->addSphere(1e5, Vec(50, 1e5, 81.6), Vec(.8, .8, .8), DIFF, "./textures/star.jpg", 4000);//Bottom
     myManager->addSphere(1e5, Vec(50, -1e5 + 81.6, 81.6), Vec(.75, .75, .75), DIFF);//Top
     myManager->addSphere(1e5, Vec(50, 40.8, -1e5 + 170), Vec(.0,0,0), DIFF);//Front
-//    myManager->addBezier(Vec(20, 0, 40), Vec(.999, .999, .999), MIXED, bezier, "./textures/vase.bmp", 1);
-//    myManager->addBezier(Vec(80, 0, 40), Vec(.999, .999, .999), MIXED, bezier, "./textures/vase.bmp", 1);
+    myManager->addBezier(Vec(20, 0, 40), Vec(.999, .999, .999), MIXED, bezier, "./textures/vase.bmp", 1);
+    myManager->addBezier(Vec(80, 0, 40), Vec(.999, .999, .999), MIXED, bezier, "./textures/vase.bmp", 1);
     myManager->addMesh(Vec(50, 0, 130), Vec(1, 1, 1) * .999, REFR, 22, "./meshes/arma_0.01.obj", Vec(1,2,-3));
 
 
@@ -98,8 +98,16 @@ int main() {
 //
 //    myManager->addMesh(Vec(50, 10, 85), Vec(0.999,0.999,0.999), REFR, 15, "./meshes/diamond.obj", Vec(1,3,2));
 
-
-
+    // Scene Four
+//    myManager->addSphere(1e5, Vec(1e5 + 1, 40.8, 81.6), Vec(.75, .25, .25), SPEC, "./textures/brickwall_normal.jpg",
+//                         6000, 1);//Left
+//    myManager->addSphere(1e5, Vec(-1e5 + 99, 40.8, 81.6), Vec(.75, .25, .25), SPEC, "./textures/brickwall_normal.jpg",
+//                         6000, 1);//Right
+//    myManager->addSphere(1e5, Vec(50, 40.8, 1e5), Vec(.75, .75, .75), DIFF, "./textures/marble.bmp", 4000);//Back
+//    myManager->addSphere(1e5, Vec(50, 1e5, 81.6), Vec(.8, .8, .8), DIFF, "./textures/star.jpg", 4000);//Bottom
+//    myManager->addSphere(1e5, Vec(50, -1e5 + 81.6, 81.6), Vec(.75, .75, .75), DIFF);//Top
+//    myManager->addSphere(1e5, Vec(50, 40.8, -1e5 + 170), Vec(.0,0,0), DIFF);//Front
+//    myManager->addMesh(Vec(50, 0, 100), Vec(1, .9, .5) * .999, REFR, 30, "./meshes/bunny.obj", Vec(1,2,3));
 
 
     int w = ANTI_ALIASING ? 2 * width : width, h = ANTI_ALIASING ? 2 * height : height, samples = SAMPLENUM;
@@ -116,12 +124,15 @@ int main() {
         fprintf(stderr, "\rHitPointPass %5.2f%%", 100.0 * y / (h - 1));
         for (int x = 0; x < w; x++) {
             myManager->pixel_index = x + y * w;
+
+            // Tent filter for soft shadow and anti-aliasing
             double r1 = 2 * enumerateRand(), dx = r1 < 1 ? sqrt(r1) - 1 : 1 - sqrt(2 - r1);
             double r2 = 2 * enumerateRand(), dy = r2 < 1 ? sqrt(r2) - 1 : 1 - sqrt(2 - r2);
             Vec d = cx * ((x + 0.5 + dx) / w - 0.5) + cy * (-(y + 0.5 + dy) / h + 0.5) + cam.direction;
             if (focalLength == 0) {
                 myManager->measure(Ray(cam.origin + d * 140, d.norm()), 0, Vec(), Vec(1, 1, 1), 0);
             } else {
+                // Set focal length and aperture for depth of focus
                 d = d.norm() * focalLength;
                 double rand1 = enumerateRand() * 2 - 1.0;
                 double rand2 = enumerateRand() * 2 - 1.0;
@@ -167,6 +178,7 @@ int main() {
             fprintf(f, "%d %d %d ", toInt(c[i].x), toInt(c[i].y), toInt(c[i].z));
         }
     } else {
+        // Combine 4 pixels into 1 pixel for anti-aliasing
         fprintf(f, "P3\n%d %d\n%d\n", w / 2, h / 2, 255);
         for (int i = 0; i < w * h / 4; i++) {
             Vec tmpColor = Vec();

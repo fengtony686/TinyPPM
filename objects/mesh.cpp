@@ -16,6 +16,7 @@ mesh::mesh(const Vec &position_, const Vec &color_, Refl_type reflectionType, do
     loadObj(file);
     initSphereAndAABB();
     std::cout << "Vertex count : " << this->allVertices.size() << std::endl;
+    std::cout << "Vertex normal count : " << this->normalVertices.size() << std::endl;
     std::cout << "Triangles count : " << this->allTriangles.size() << std::endl;
 
     for (const auto &vertex: allVertices) {
@@ -34,12 +35,33 @@ Vec mesh::getColor(const Vec &point) {
 }
 
 Vec mesh::getNormal(const Ray &r, const double &t) {
-    return allTriangles[int(t)].getNormal();
+    if (int(normalVertices.size()) <= t) {
+        // Regular normal compute
+        return allTriangles[int(t)].getNormal();
+    } else {
+        // Normal interpolation
+        Triangle intersectTriangle = allTriangles[int(t)];
+        double distance = intersectTriangle.intersect(r);
+        if (distance < 1e-4 || distance == 1e20) {
+            std::cout << "Assert failed! " << std::endl;
+        }
+        Vec intersectPoint = r.origin + r.direction * distance;
+        double sa = (intersectTriangle.b - intersectPoint).cross(intersectTriangle.c - intersectPoint).length();
+        double sb = (intersectTriangle.a - intersectPoint).cross(intersectTriangle.c - intersectPoint).length();
+        double sc = (intersectTriangle.a - intersectPoint).cross(intersectTriangle.b - intersectPoint).length();
+        Vec aNormal = normalVertices[int(triangleNodeIdx[int(t)].x)];
+        Vec bNormal = normalVertices[int(triangleNodeIdx[int(t)].y)];
+        Vec cNormal = normalVertices[int(triangleNodeIdx[int(t)].z)];
+        return (aNormal * sa + bNormal * sb + cNormal * sc).norm();
+    }
 }
 
 double mesh::intersect(const Ray &r, int &parameter) {
+    // Bounded sphere check
     if (useSphere && Sphere::intersect(r, parameter) >= 1e20)
         return 1e20;
+
+    // Bounded box check
 //    bool intersectAABB = false;
 //    for (auto t: this->AABB) {
 //        if (t.intersect(r) < 1e20 / 2) {
@@ -49,9 +71,18 @@ double mesh::intersect(const Ray &r, int &parameter) {
 //    if (!intersectAABB) {
 //        return 1e20;
 //    }
+
     double t = 1e20;
     static omp_lock_t lock;
+
+    // KD-Tree pre-check
     std::vector<int> indices = meshKDTree->getTriangle(r);
+
+//    std::vector<int> indices;
+//    for (int i = 0; i<allTriangles.size(); i++) {
+//        indices.emplace_back(i);
+//    }
+
     omp_init_lock(&lock);
 #pragma omp parallel for schedule(dynamic, 12)
     for (int j = 0; j < indices.size(); j++) {
@@ -79,6 +110,7 @@ void mesh::initSphereAndAABB() {
         if (vertex.z < minZ.z) minZ = vertex;
     }
 
+    // Init bounded box (naively dividing into triangles)
 //    AABB.emplace_back(Vec(maxX.x, maxY.y, maxZ.z), Vec(maxX.x, maxY.y, minZ.z), Vec(maxX.x, minY.y, maxZ.z));
 //    AABB.emplace_back(Vec(maxX.x, minY.y, minZ.z), Vec(maxX.x, maxY.y, minZ.z), Vec(maxX.x, minY.y, maxZ.z));
 //    AABB.emplace_back(Vec(minX.x, minY.y, minZ.z), Vec(minX.x, maxY.y, minZ.z), Vec(minX.x, minY.y, maxZ.z));
@@ -92,6 +124,7 @@ void mesh::initSphereAndAABB() {
 //    AABB.emplace_back(Vec(maxX.x, maxY.y, minZ.z), Vec(minX.x, maxY.y, minZ.z), Vec(maxX.x, minY.y, minZ.z));
 //    AABB.emplace_back(Vec(minX.x, minY.y, minZ.z), Vec(minX.x, maxY.y, minZ.z), Vec(maxX.x, minY.y, minZ.z));
 
+    // Init bounded sphere (Jack Ritter's algorithm)
     double xDistance = maxX / minX;
     double yDistance = maxY / minY;
     double zDistance = maxZ / minZ;
@@ -124,7 +157,7 @@ void mesh::loadObj(const std::string &file) {
     while (input1.getline(buffer, MAX_LENGTH)) {
         std::string line = buffer;
         if (!line.length()) continue;
-        if (line[0] == 'v') {
+        if (line[0] == 'v' && line[1] == ' ') {
             Vec vertex;
             int pos = 0;
             char *_;
@@ -188,7 +221,56 @@ void mesh::loadObj(const std::string &file) {
             for (int i = 0, pos = 0; i < 3; ++i) {
                 v[i] = int(strtod(readNumber(line, pos).c_str(), &_) - 1);
             }
+            triangleNodeIdx.emplace_back(v[0], v[1], v[2]);
             allTriangles.emplace_back(allVertices[v[0]], allVertices[v[1]], allVertices[v[2]]);
+        }
+        if (line[0] == 'v' && line[1] == 'n') {
+            Vec vNormal;
+            int pos = 0;
+            char *_;
+            if (axis.x == 1) {
+                vNormal.x = strtod(readNumber(line, pos).c_str(), &_);
+            } else if (axis.x == -1) {
+                vNormal.x = -strtod(readNumber(line, pos).c_str(), &_);
+            } else if (axis.x == 2) {
+                vNormal.y = strtod(readNumber(line, pos).c_str(), &_);
+            } else if (axis.x == -2) {
+                vNormal.y = -strtod(readNumber(line, pos).c_str(), &_);
+            } else if (axis.x == 3) {
+                vNormal.z = strtod(readNumber(line, pos).c_str(), &_);
+            } else {
+                vNormal.z = -strtod(readNumber(line, pos).c_str(), &_);
+            }
+
+            if (axis.y == 1) {
+                vNormal.x = strtod(readNumber(line, pos).c_str(), &_);
+            } else if (axis.y == -1) {
+                vNormal.x = -strtod(readNumber(line, pos).c_str(), &_);
+            } else if (axis.y == 2) {
+                vNormal.y = strtod(readNumber(line, pos).c_str(), &_);
+            } else if (axis.y == -2) {
+                vNormal.y = -strtod(readNumber(line, pos).c_str(), &_);
+            } else if (axis.y == 3) {
+                vNormal.z = strtod(readNumber(line, pos).c_str(), &_);
+            } else {
+                vNormal.z = -strtod(readNumber(line, pos).c_str(), &_);
+            }
+
+            if (axis.z == 1) {
+                vNormal.x = strtod(readNumber(line, pos).c_str(), &_);
+            } else if (axis.z == -1) {
+                vNormal.x = -strtod(readNumber(line, pos).c_str(), &_);
+            } else if (axis.z == 2) {
+                vNormal.y = strtod(readNumber(line, pos).c_str(), &_);
+            } else if (axis.z == -2) {
+                vNormal.y = -strtod(readNumber(line, pos).c_str(), &_);
+            } else if (axis.z == 3) {
+                vNormal.z = strtod(readNumber(line, pos).c_str(), &_);
+            } else {
+                vNormal.z = -strtod(readNumber(line, pos).c_str(), &_);
+            }
+
+            this->normalVertices.emplace_back(vNormal);
         }
     }
 }

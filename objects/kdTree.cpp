@@ -37,13 +37,12 @@ bool AABBKDTree::isIntersect(const Triangle &triangle) const {
     double triangleMaxZ = fmax(fmax(triangle.a.z, triangle.b.z), triangle.c.z);
     double triangleMinZ = fmin(fmin(triangle.a.z, triangle.b.z), triangle.c.z);
 
-    if (((triangleMaxX <= max.x && triangleMaxX >= min.x) || (triangleMinX <= max.x && triangleMinX >= min.x)) &&
-        ((triangleMaxY <= max.y && triangleMaxY >= min.y) || (triangleMinY <= max.y && triangleMinY >= min.y)) &&
-        ((triangleMaxZ <= max.z && triangleMaxZ >= min.z) || (triangleMinZ <= max.z && triangleMinZ >= min.z)))
-        return true;
-    if (((max.x <= triangleMaxX && max.x >= triangleMinX) || (min.x <= triangleMaxX && min.x >= triangleMinX)) &&
-        ((max.y <= triangleMaxY && max.y >= triangleMinY) || (min.y <= triangleMaxY && min.y >= triangleMinY)) &&
-        ((max.z <= triangleMaxZ && max.z >= triangleMinZ) || (min.z <= triangleMaxZ && min.z >= triangleMinZ)))
+    if (((triangleMaxX <= max.x && triangleMaxX >= min.x) || (triangleMinX <= max.x && triangleMinX >= min.x) ||
+         (max.x <= triangleMaxX && max.x >= triangleMinX) || (min.x <= triangleMaxX && min.x >= triangleMinX)) &&
+        ((triangleMaxY <= max.y && triangleMaxY >= min.y) || (triangleMinY <= max.y && triangleMinY >= min.y) ||
+         (max.y <= triangleMaxY && max.y >= triangleMinY) || (min.y <= triangleMaxY && min.y >= triangleMinY)) &&
+        ((triangleMaxZ <= max.z && triangleMaxZ >= min.z) || (triangleMinZ <= max.z && triangleMinZ >= min.z) ||
+         (max.z <= triangleMaxZ && max.z >= triangleMinZ) || (min.z <= triangleMaxZ && min.z >= triangleMinZ)))
         return true;
     else {
         return false;
@@ -136,7 +135,7 @@ KdTree::Node::Node(const std::vector<int> &triangles, KdTree *root, const AABBKD
                 break;
             case 1:
                 leftMax = Vec(aabb.max.x, splitPoint, aabb.max.z);
-                rightMin = Vec(aabb.min.y, splitPoint, aabb.min.z);
+                rightMin = Vec(aabb.min.x, splitPoint, aabb.min.z);
                 break;
             case 2:
                 leftMax = Vec(aabb.max.x, aabb.max.y, splitPoint);

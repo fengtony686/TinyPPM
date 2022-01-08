@@ -21,6 +21,7 @@ public:
         coefficients.reserve(int(num));
         int n = int(num) - 1;
 
+        // Preprocessing and compute the coefficients in Q(f, t)
         for (int i = 0; i <= n; ++i) {
             coefficients.emplace_back(Vec(px[0], py[0]));
             for (int j = 0; j <= n - i; ++j) {

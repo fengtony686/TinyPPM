@@ -16,6 +16,8 @@ public:
     double zoom;
     std::vector<Vec> allVertices;
     std::vector<Triangle> allTriangles;
+    std::vector<Vec> triangleNodeIdx;
+    std::vector<Vec> normalVertices;
 //    std::vector<Triangle> AABB;
     Vec axis;
     KdTree * meshKDTree;

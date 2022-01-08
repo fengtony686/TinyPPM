@@ -23,10 +23,6 @@ public:
 
     Vec min;
     Vec max;
-//    std::vector<Ray> getLines() const;
-
-//private:
-//    std::vector<Ray> lines;
 };
 
 class KdTree {
@@ -53,7 +49,7 @@ private:
         Node *left = nullptr;
         Node *right = nullptr;
         std::vector<int> triangles;
-        int dimension = 0;
+        int dimension;
         KdTree *root{};
         AABBKDTree aabb;
         bool leaf = false;

@@ -13,8 +13,8 @@
 #include "dbg.h"
 #include <ctime>
 
-#define SAMPLENUM ((int)1200)
-#define DEPTH ((int)15)
+#define SAMPLENUM ((int)1000)
+#define DEPTH ((int)10)
 #define ALPHA ((double)0.7) // the alpha parameter of PPM
 #define MAX_LENGTH 65536ul
 

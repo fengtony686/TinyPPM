@@ -34,6 +34,8 @@ public:
             double u = atan2(point.z - position.z, point.x - position.x);
             if (u < 0)
                 u += 2 * M_PI;
+
+            // u, t are the UV coordinates
             return texture->getColorBezier(Vec(u / 2 / M_PI + .5, t));
         }
         return this->color;
@@ -52,6 +54,8 @@ public:
     double intersect(const Ray &ray, int &parameter)
     override {
         double final_dis = 1e20;
+
+        // Handle the perpendicular case, but the precision is a little inadequate
         if (std::abs(ray.direction.y) < 5e-4) {
             double t = curve.solveT(ray.origin.y - position.y);
             if (int(t) == -1)
@@ -78,9 +82,12 @@ public:
         a = t1 * t1 + t3 * t3;
         b = -position.y - (t1 * t2 + t3 * t4) / (t1 * t1 + t3 * t3);
         c = pow(t2 * t3 - t1 * t4, 2) / (t1 * t1 + t3 * t3);
+
+        // This is equivalent to bounded box
         if (c > pow(curve.maxX, 2) || (b < 0 && b * b * a + c > pow(curve.maxX, 2)) ||
             (b > curve.height && pow(curve.height - b, 2) * a + c > pow(curve.maxX, 2)))
             return 1e20;
+
         for (int count = 0; count <= curve.num; ++count) {
             double segmentT0 = curve.data[count].t0, segmentT1 = curve.data[count].t1;
             {
