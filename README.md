@@ -1,5 +1,5 @@
 # README
-[![](https://tokei.rs/b1/github/Aaronepower/tokei)](https://github.com/Aaronepower/tokei)			
+[![](https://tokei.rs/b1/github/fengtony686/TinyPPM)](https://github.com/fengtony686/TinyPPM)			
 本项目是[胡事民教授](https://cg.cs.tsinghua.edu.cn/shimin.htm)的清华大学交叉信息研究院专业课《高等计算机图形学》课程大作业，实现了支持复杂网格模型（含包围球加速、KD-Tree 算法加速、多线程求交加速、法向插值）、Bezier 旋转曲面（含包围盒加速、系数预处理加速）、平面以及球面的光线追踪引擎。其中光线追踪部分采用了 Progressive Photon Mapping 算法（渐进式光子映射），支持了 Hash Grid 加速。除此之外，通过对结果图像的进一步处理，本项目实现了色散效果、图片去噪以及超采样。报告将按照从核心代码到附加功能的顺序分为多个章节。
 
 代码结构如下：
